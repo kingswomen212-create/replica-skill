@@ -1,5 +1,5 @@
 feature,area,priority,original,clone,notes
-Sign up with email or Google,onboarding,must,yes,no,no auth yet; single seeded demo user
+Sign up with email or Google,onboarding,must,yes,partial,"sign up/sign in screens built and route into the app; no real auth, both just hand you the seeded demo user"
 Pick a video template (faceless/avatar/music-video/long-form/skeleton/character/clip),creation,must,yes,yes,"all 7 routed, plan-gated, and each has its own step sequence and scene count (template-config.ts); only the underlying AI calls are still simulated"
 Generate a script from a topic or idea,creation,must,yes,partial,simulated script lines; no real LLM wired
 Generate per-scene AI visuals from the script,creation,must,yes,partial,simulated placeholder assets; no real image/video-gen wired

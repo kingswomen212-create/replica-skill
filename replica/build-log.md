@@ -25,8 +25,14 @@ from recon.md, architecture.md and design/ only.
 | S20 Autopilot dashboard | 2026-11-09 | not started | everything | folded into S19's stub for now |
 | S21 billing | 2026-11-09 | partial | Stripe checkout, credit enforcement | plan cards + credit meter render from seed data; buttons are presentational |
 | S22 settings (BYO provider keys) | 2026-11-09 | stub | key storage, encryption | shell page explains the feature and shows the three key types; nothing is saved |
-| S01-S06 marketing site | 2026-11-09 | not started | everything | out of scope this pass; `/` is a one-screen placeholder into `/app` |
-| S07/S08 sign up / sign in | 2026-11-09 | not started | everything | no auth; a single seeded demo user stands in (`lib/data/seed.ts`) |
+| S01 home | 2026-11-09 | done | | hero, template grid, differentiator callouts, CTA |
+| S02 features | 2026-11-09 | done | | 6 feature cards, pulls real counts from seed.ts |
+| S03 how it works | 2026-11-09 | done | | 3-step explainer |
+| S04 pricing | 2026-11-09 | done | | 3 plan cards from seed.ts plans |
+| S05 FAQ | 2026-11-09 | done | | accordion, 7 original Q&As |
+| S06 tools/niche landing pages | 2026-11-09 | not started | everything | recon marked this an SEO-funnel, marketing-site concern, lowest priority of the six |
+| S07 sign up | 2026-11-09 | partial | real auth | form + Google button render and validate; submitting drops you straight into `/app` as the seeded demo user |
+| S08 sign in | 2026-11-09 | partial | real auth | same as S07 |
 
 ## What was harder than expected
 
@@ -96,18 +102,53 @@ confirmed long-form produces exactly 9. Zero console errors.
 Screenshots: `S11-long-form.png`, `S12-avatar-ready.png`,
 `S13-music-video.png`.
 
+## Widening pass: marketing site + sign up/sign in
+
+Third pass, same session: built the five marketing screens recon scoped
+as core (home, features, pricing, how-it-works, FAQ — `/tools`'s niche
+landing pages stay out of scope, recon flagged them as an SEO-funnel
+concern rather than core app) under a `(marketing)` route group with its
+own nav/footer, distinct from the in-app shell. All copy is original —
+nothing from aituber.app's marketing pages was read or adapted, per
+replica-build's clean-room rule. Pricing and the template grid pull their
+numbers from `lib/data/seed.ts` rather than being hand-typed twice.
+
+Added S07/S08 (sign up / sign in): real client-side validation (required
+fields, min password length), but no real auth — submitting either form
+takes you straight to `/app` as the seeded demo user, same as the rest of
+this pass's fake data layer.
+
+One build error worth a note: `lucide-react` has no `Chrome` icon export
+in the installed version, used for a "Continue with Google" button.
+Replaced it with the generic `Globe` icon rather than hunting for a
+brand-shaped substitute — a browser-logo icon next to a Google button
+would have been borrowing Google's visual association anyway, which the
+skill's clean-room rule (no logos not our own) argues against regardless
+of whether lucide shipped one.
+
+Verified with Playwright against the production build: visited all 7 new
+routes, expanded an FAQ item, and ran signup -> /app end to end. Zero
+console errors. Screenshots: `S01-home-new.png` (+ mobile),
+`S02-features.png`, `S03-howitworks.png`, `S04-pricing.png`,
+`S05-faq.png` (+ expanded), `S07-signup.png`, `S08-signin.png`.
+
 ## Parity
 
-`python3 replica-diff/parity.py replica/features.csv` → 36.2/100, 2 of 10
-must-haves fully done (scene regeneration; template selection now counts
-as done since every template has real, distinct behavior even though the
-AI calls themselves are still simulated). Correctly says "not shippable
-yet" — accurate for this pass, not a defect.
+`python3 replica-diff/parity.py replica/features.csv` → 39.4/100, 2 of 10
+must-haves fully done. Correctly still says "not shippable yet" — the
+remaining must-haves are all about the real AI pipeline and billing
+enforcement, which no amount of frontend widening substitutes for.
 
 ## Next
 
-`/replica-backend`: swap `lib/data/fake-client.ts` for the real Supabase
+Real backend work is blocked on credentials the user hasn't provided yet
+(an OpenAI key was attempted and rejected by OpenAI as invalid; see chat
+history). Until that's unblocked, remaining frontend work is S06's niche
+landing pages (low value, explicitly out of scope per recon), S19/S20
+Autopilot's UI made interactive against local state, or S21/S22 made to
+actually persist choices client-side. Once real credentials land:
+`/replica-backend` swaps `lib/data/fake-client.ts` for the real Supabase
 tables + Trigger.dev jobs from architecture.md (same function signatures,
-so no screen changes), wire a real LLM/TTS/image provider behind the BYO
-provider-key settings page, and add Stripe + credit enforcement. Then
+so no screen changes), wires a real LLM/TTS/image provider behind the BYO
+provider-key settings page, and adds Stripe + credit enforcement. Then
 `/replica-test` once the data layer is real.
