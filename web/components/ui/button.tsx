@@ -32,26 +32,37 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     { className, variant = "primary", size = "md", loading, pill, asChild, disabled, children, ...props },
     ref
   ) => {
-    const Comp = asChild ? Slot : "button";
+    const sharedClassName = cn(
+      "inline-flex items-center justify-center font-medium transition-colors duration-fast",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+      "disabled:opacity-40 disabled:pointer-events-none",
+      pill ? "rounded-pill" : "rounded-md",
+      variantClasses[variant],
+      sizeClasses[size],
+      className
+    );
+
+    // Slot (asChild) requires exactly one child element to merge props
+    // onto, so it can't also carry the loading-icon/span wrapper below.
+    if (asChild) {
+      return (
+        <Slot ref={ref} className={sharedClassName} {...props}>
+          {children}
+        </Slot>
+      );
+    }
+
     return (
-      <Comp
+      <button
         ref={ref}
         aria-busy={loading || undefined}
         disabled={disabled || loading}
-        className={cn(
-          "inline-flex items-center justify-center font-medium transition-colors duration-fast",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
-          "disabled:opacity-40 disabled:pointer-events-none",
-          pill ? "rounded-pill" : "rounded-md",
-          variantClasses[variant],
-          sizeClasses[size],
-          className
-        )}
+        className={sharedClassName}
         {...props}
       >
         {loading && <Loader2 className="size-4 animate-spin" aria-hidden />}
         <span>{children}</span>
-      </Comp>
+      </button>
     );
   }
 );

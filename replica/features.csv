@@ -1,23 +1,23 @@
 feature,area,priority,original,clone,notes
-Sign up with email or Google,onboarding,must,yes,no,
-Pick a video template (faceless/avatar/music-video/long-form/skeleton/character/clip),creation,must,yes,no,start with faceless only; widen later
-Generate a script from a topic or idea,creation,must,yes,no,needs an LLM provider of our own
-Generate per-scene AI visuals from the script,creation,must,yes,no,needs an image/video-gen provider of our own
-Generate a voiceover in a chosen voice and language,creation,must,yes,no,needs our own TTS provider; not ElevenLabs's roster
-Auto-sync captions to the voiceover,creation,must,yes,no,
-Regenerate a single scene without rebuilding the whole video,editing,must,yes,no,
-Add background music (library or user upload),creation,must,yes,no,
-Download the finished video in 4K,export,must,yes,no,
-Credit-based usage metering per plan,billing,must,yes,no,
-Pick a visual style (cinematic/anime/realistic/3D/etc),creation,should,yes,no,
-Multi-language voiceover and captions,creation,should,yes,no,"start with a handful of languages, not 140+"
-Avatar/UGC mode from an uploaded photo,creation,should,yes,no,likeness/consent gate needed
-Music-video mode synced to a track's beat,creation,should,yes,no,
-"Long-form mode (multi-scene, up to ~20 min)",creation,should,yes,no,
-One-click publish to a connected social channel,publishing,should,yes,no,official platform APIs only
-Autopilot: scheduled unattended generation + publishing,automation,could,yes,no,highest-risk feature; build last
+Sign up with email or Google,onboarding,must,yes,no,no auth yet; single seeded demo user
+Pick a video template (faceless/avatar/music-video/long-form/skeleton/character/clip),creation,must,yes,partial,"all 7 routed and plan-gated; only faceless has distinct behavior, others share the generic pipeline"
+Generate a script from a topic or idea,creation,must,yes,partial,simulated script lines; no real LLM wired
+Generate per-scene AI visuals from the script,creation,must,yes,partial,simulated placeholder assets; no real image/video-gen wired
+Generate a voiceover in a chosen voice and language,creation,must,yes,no,pipeline has a step for it but no audio is produced
+Auto-sync captions to the voiceover,creation,must,yes,no,pipeline has a step for it but no caption track is produced or shown
+Regenerate a single scene without rebuilding the whole video,editing,must,yes,yes,works end to end against the fake data layer
+Add background music (library or user upload),creation,must,yes,no,pipeline has a step for it; no music UI yet
+Download the finished video in 4K,export,must,yes,partial,export flow and button work; no file is actually produced (simulated)
+Credit-based usage metering per plan,billing,must,yes,partial,credit meter UI renders from seed data; spend/enforcement isn't wired
+Pick a visual style (cinematic/anime/realistic/3D/etc),creation,should,yes,yes,
+Multi-language voiceover and captions,creation,should,yes,no,voice picker shows a language per voice; no separate language selector or real TTS
+Avatar/UGC mode from an uploaded photo,creation,should,yes,partial,"form UI + file input built; upload isn't processed, runs the same generic pipeline"
+Music-video mode synced to a track's beat,creation,should,yes,partial,"form UI + file input built; no real beat-sync, runs the same generic pipeline"
+"Long-form mode (multi-scene, up to ~20 min)",creation,should,yes,partial,"routed and plan-gated; no distinct multi-scene/duration behavior yet"
+One-click publish to a connected social channel,publishing,should,yes,no,
+Autopilot: scheduled unattended generation + publishing,automation,could,yes,no,"shell stub page only; highest-risk feature, built last per architecture.md"
 Idea/topic finder (trending-topic suggestions),creation,could,yes,no,
-Niche-specific landing pages/generators (SEO funnel),growth,could,yes,no,"marketing-site concern, not core app"
+Niche-specific landing pages/generators (SEO funnel),growth,could,yes,no,marketing site out of scope this pass
 Team seats / invite collaborators,team,could,yes,no,
 API and MCP access for programmatic video creation,platform,could,yes,no,
 1300+ ElevenLabs voice roster as shipped,creation,must,yes,skip,third-party licensed catalogue; clone the TTS feature against our own provider instead
