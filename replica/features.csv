@@ -1,0 +1,27 @@
+feature,area,priority,original,clone,notes
+Sign up with email or Google,onboarding,must,yes,partial,"sign up/sign in screens built and route into the app; no real auth, both just hand you the seeded demo user"
+Pick a video template (faceless/avatar/music-video/long-form/skeleton/character/clip),creation,must,yes,yes,"all 7 routed, plan-gated, and each has its own step sequence and scene count (template-config.ts); only the underlying AI calls are still simulated"
+Generate a script from a topic or idea,creation,must,yes,partial,simulated script lines; no real LLM wired
+Generate per-scene AI visuals from the script,creation,must,yes,partial,simulated placeholder assets; no real image/video-gen wired
+Generate a voiceover in a chosen voice and language,creation,must,yes,no,pipeline has a step for it but no audio is produced
+Auto-sync captions to the voiceover,creation,must,yes,no,pipeline has a step for it but no caption track is produced or shown
+Regenerate a single scene without rebuilding the whole video,editing,must,yes,yes,works end to end against the fake data layer
+Add background music (library or user upload),creation,must,yes,no,pipeline has a step for it; no music UI yet
+Download the finished video in 4K,export,must,yes,partial,export flow and button work; no file is actually produced (simulated)
+Credit-based usage metering per plan,billing,must,yes,partial,credit meter UI renders from seed data; spend/enforcement isn't wired
+Pick a visual style (cinematic/anime/realistic/3D/etc),creation,should,yes,yes,
+Multi-language voiceover and captions,creation,should,yes,no,voice picker shows a language per voice; no separate language selector or real TTS
+Avatar/UGC mode from an uploaded photo,creation,should,yes,partial,"photo is actually used (shown as the scene thumbnail), its own analyzing_photo/lip-sync steps; no real likeness/consent gate or real lip-sync"
+Music-video mode synced to a track's beat,creation,should,yes,partial,"own detecting_beat/syncing_to_beat steps and 6 beat-matched scenes; no real audio analysis"
+"Long-form mode (multi-scene, up to ~20 min)",creation,should,yes,partial,"9 distinct chapter-structured scenes at a longer per-scene duration; still the same simulated AI calls as faceless"
+One-click publish to a connected social channel,publishing,should,yes,no,
+Autopilot: scheduled unattended generation + publishing,automation,could,yes,partial,"connect/disconnect, autopilot toggle, niche + cadence, and a run history are interactive against local state; no real OAuth, no real scheduler, nothing actually fires on a timer"
+Idea/topic finder (trending-topic suggestions),creation,could,yes,no,
+Niche-specific landing pages/generators (SEO funnel),growth,could,yes,no,marketing site out of scope this pass
+Team seats / invite collaborators,team,could,yes,no,
+API and MCP access for programmatic video creation,platform,could,yes,no,
+1300+ ElevenLabs voice roster as shipped,creation,must,yes,skip,third-party licensed catalogue; clone the TTS feature against our own provider instead
+Specific proprietary image/video generation model(s) behind the app,creation,must,yes,skip,not visible from recon and not reproducible; pick our own vendor
+Brand name "AITuber" logo and palette,brand,must,yes,skip,replica-brand replaces this before launch
+Existing affiliate program and Discord/Reddit community,growth,could,yes,skip,"their network, not a feature"
+Testimonials blog posts and demo follower numbers shown on the marketing site,marketing,could,yes,skip,not our data to reuse; replica-launch writes fresh copy
