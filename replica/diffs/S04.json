@@ -1,0 +1,64 @@
+{
+  "mode": "layout",
+  "original": {
+    "width": 1440,
+    "height": 4063
+  },
+  "clone": {
+    "width": 1440,
+    "height": 1108
+  },
+  "compared_at": {
+    "width": 480,
+    "height": 369
+  },
+  "height_delta_pct": -72.7,
+  "score": 27.1,
+  "verdict": "different",
+  "regions": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 1320,
+      "h": 1200,
+      "cells": 69,
+      "where": "middle centre"
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 240,
+      "h": 120,
+      "cells": 2,
+      "where": "top right"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 120,
+      "h": 120,
+      "cells": 1,
+      "where": "top centre"
+    },
+    {
+      "x": 1200,
+      "y": 480,
+      "w": 120,
+      "h": 120,
+      "cells": 1,
+      "where": "middle right"
+    },
+    {
+      "x": 720,
+      "y": 600,
+      "w": 120,
+      "h": 120,
+      "cells": 1,
+      "where": "middle centre"
+    }
+  ],
+  "files": {
+    "original": "replica/screens/S04-pricing.png",
+    "clone": "replica/clone-screens/S04-pricing.png"
+  }
+}
