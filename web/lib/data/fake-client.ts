@@ -10,10 +10,16 @@
 // reference equality. Mutating a Video or Scene object's fields directly
 // would leave the old object reference in the Map and the UI would never
 // re-render past its first paint.
+//
+// Each template has its own step sequence and scene count (template-
+// config.ts), not one generic pipeline with a different label on top:
+// avatar analyzes a photo and lip-syncs instead of painting visuals,
+// music-video detects a beat, long-form runs nine scenes instead of four.
 
 import { nanoid } from "nanoid";
-import type { GenerationStep, Scene, TemplateType, Video } from "./types";
+import type { Scene, TemplateType, Video } from "./types";
 import { currentUser } from "./seed";
+import { STEP_LABEL, TEMPLATE_CONFIG } from "./template-config";
 
 interface Store {
   videos: Map<string, Video>;
@@ -48,26 +54,10 @@ function setScene(videoId: string, sceneId: string, patch: Partial<Scene>) {
   notify();
 }
 
-const STEP_ORDER: GenerationStep[] = [
-  "writing_script",
-  "generating_visuals",
-  "generating_voiceover",
-  "syncing_captions",
-  "scoring_music",
-  "mastering",
-  "done",
-];
-
-const STEP_LABEL: Record<GenerationStep, string> = {
-  writing_script: "Writing a viral-ready script",
-  generating_visuals: "Painting AI visuals per scene",
-  generating_voiceover: "Generating your voiceover",
-  syncing_captions: "Syncing captions to every word",
-  scoring_music: "Scoring with background music",
-  mastering: "Mastering the final video",
-  done: "Done",
-};
-export { STEP_LABEL, STEP_ORDER };
+export { STEP_LABEL };
+export function stepsFor(templateType: TemplateType) {
+  return TEMPLATE_CONFIG[templateType].steps;
+}
 
 export interface CreateVideoInput {
   templateType: TemplateType;
@@ -75,6 +65,7 @@ export interface CreateVideoInput {
   voiceId: string;
   style: string;
   languageCode?: string;
+  sourcePhotoUrl?: string;
 }
 
 export async function createVideo(input: CreateVideoInput): Promise<Video> {
@@ -89,6 +80,7 @@ export async function createVideo(input: CreateVideoInput): Promise<Video> {
     languageCode: input.languageCode ?? "en",
     style: input.style,
     resolution: "1080x1920",
+    sourcePhotoUrl: input.sourcePhotoUrl,
     createdAt: new Date().toISOString(),
   };
   store.videos.set(video.id, video);
@@ -105,25 +97,21 @@ export function getScenes(videoId: string): Scene[] {
   return store.scenes.get(videoId) ?? [];
 }
 
-const SCENE_SCRIPTS = [
-  "Open on the hook: the one claim that stops the scroll.",
-  "Set up the problem most people get wrong.",
-  "Reveal the twist the idea turns on.",
-  "Land the payoff and the call to action.",
-];
-
-/** Simulates the real generate-video job: writes a script, then generates
- * each scene's visuals/voice/captions, moving the video through the same
- * steps the marketing site's own progress animation shows. */
+/** Simulates the real generate-video job for this video's template: its
+ * own step sequence, its own scene count and script beats, from
+ * template-config.ts. */
 export async function generateVideo(videoId: string): Promise<void> {
   const video = store.videos.get(videoId);
   if (!video) throw new Error("video_not_found");
+  const config = TEMPLATE_CONFIG[video.templateType];
+  const [firstStep, ...restSteps] = config.steps;
 
-  setVideo(videoId, { status: "generating", currentStep: "writing_script" });
+  setVideo(videoId, { status: "generating", currentStep: firstStep });
   await wait(900);
 
-  const sceneIds = SCENE_SCRIPTS.map(() => nanoid(8));
-  const scenes: Scene[] = SCENE_SCRIPTS.map((line, i) => ({
+  const scriptLines = config.sceneScripts(video.ideaPrompt);
+  const sceneIds = scriptLines.map(() => nanoid(8));
+  const scenes: Scene[] = scriptLines.map((line, i) => ({
     id: sceneIds[i],
     videoId,
     orderIndex: i,
@@ -134,22 +122,22 @@ export async function generateVideo(videoId: string): Promise<void> {
   store.scenes.set(videoId, scenes);
   notify();
 
-  for (const step of STEP_ORDER.slice(1, -1)) {
+  const visualishSteps = new Set(["generating_visuals", "generating_lipsync", "syncing_to_beat", "generating_clip"]);
+
+  for (const step of restSteps.slice(0, -1)) {
     setVideo(videoId, { currentStep: step });
-    if (step === "generating_visuals") {
+    if (visualishSteps.has(step)) {
       for (const sceneId of sceneIds) {
         setScene(videoId, sceneId, { status: "generating" });
-        await wait(500);
+        await wait(scenes.length <= 2 ? 1100 : 500);
         const scene = (store.scenes.get(videoId) ?? []).find((s) => s.id === sceneId)!;
-        // One scene occasionally "fails" so the error state is real to
-        // test, not just styled -- scene 4 (index 3) fails on first pass.
-        if (scene.orderIndex === 3) {
+        if (config.failingSceneIndex !== null && scene.orderIndex === config.failingSceneIndex) {
           setScene(videoId, sceneId, { status: "failed" });
         } else {
           setScene(videoId, sceneId, {
             status: "ready",
-            visualAssetUrl: `/seed/scene-${scene.orderIndex}.svg`,
-            durationSeconds: 5,
+            visualAssetUrl: video.sourcePhotoUrl ?? `/seed/scene-${scene.orderIndex}.svg`,
+            durationSeconds: config.sceneDurationSeconds,
           });
         }
       }
@@ -170,21 +158,22 @@ export async function generateVideo(videoId: string): Promise<void> {
 }
 
 export async function regenerateScene(videoId: string, sceneId: string): Promise<void> {
+  const video = store.videos.get(videoId);
   const scenes = store.scenes.get(videoId);
   const scene = scenes?.find((s) => s.id === sceneId);
-  if (!scene) throw new Error("scene_not_found");
+  if (!scene || !video) throw new Error("scene_not_found");
+  const config = TEMPLATE_CONFIG[video.templateType];
 
   setScene(videoId, sceneId, { status: "generating" });
   await wait(1200);
   setScene(videoId, sceneId, {
     status: "ready",
-    visualAssetUrl: `/seed/scene-${scene.orderIndex}.svg`,
-    durationSeconds: 5,
+    visualAssetUrl: video.sourcePhotoUrl ?? `/seed/scene-${scene.orderIndex}.svg`,
+    durationSeconds: config.sceneDurationSeconds,
   });
 
-  const video = store.videos.get(videoId);
   const refreshedScenes = store.scenes.get(videoId) ?? [];
-  if (video && video.status === "failed" && refreshedScenes.every((s) => s.status === "ready")) {
+  if (video.status === "failed" && refreshedScenes.every((s) => s.status === "ready")) {
     setVideo(videoId, { status: "ready", errorMessage: undefined });
   }
 }

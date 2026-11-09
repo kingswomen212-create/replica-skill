@@ -13,12 +13,12 @@ from recon.md, architecture.md and design/ only.
 | --- | --- | --- | --- | --- |
 | S09 dashboard (template picker) | 2026-11-09 | done | plan-gating is static (seed user is always "Pro") | |
 | S10 faceless creator | 2026-11-09 | done | | full idea form, voice/style pickers |
-| S11 long-form creator | 2026-11-09 | partial | no distinct multi-scene/duration behavior | routes through the same generic pipeline as faceless |
-| S12 avatar/UGC creator | 2026-11-09 | partial | photo isn't processed, no likeness/consent gate | form UI built, shares the generic pipeline |
-| S13 music-video creator | 2026-11-09 | partial | no real beat-sync | form UI built, shares the generic pipeline |
-| S14 skeleton creator | 2026-11-09 | partial | style-only differentiation | routes through the generic pipeline |
-| S15 talking-object creator | 2026-11-09 | partial | style-only differentiation | routes through the generic pipeline |
-| S16 AI clip creator | 2026-11-09 | partial | no distinct text/image/frame modes | routes through the generic pipeline |
+| S11 long-form creator | 2026-11-09 | partial | real AI calls | own 9-scene chapter structure and longer per-scene duration (template-config.ts) |
+| S12 avatar/UGC creator | 2026-11-09 | partial | real lip-sync, likeness/consent gate | photo is used as the scene thumbnail; own analyzing_photo/generating_lipsync steps; single scene, never forced to fail |
+| S13 music-video creator | 2026-11-09 | partial | real beat detection | own detecting_beat/syncing_to_beat steps, 6 beat-matched scenes |
+| S14 skeleton creator | 2026-11-09 | partial | real AI calls | own anatomy-themed scene beats, same step shape as faceless |
+| S15 talking-object creator | 2026-11-09 | partial | real AI calls | own mascot/product-themed scene beats |
+| S16 AI clip creator | 2026-11-09 | partial | real AI calls, distinct input modes | own minimal generating_clip/mastering pipeline, single scene, never forced to fail |
 | S17 scene editor / live progress | 2026-11-09 | done | real AI calls, real asset thumbnails | regenerate works; one scene fails by design on first pass to exercise the error state honestly, not just style it |
 | S18 export | 2026-11-09 | partial | no file is actually produced | button, loading state and success toast all work against the fake layer |
 | S19 Autopilot setup | 2026-11-09 | stub | everything | shell page only, says so on-screen; highest-risk feature per architecture.md, built last on purpose |
@@ -67,11 +67,42 @@ confirm Download in 4K enables only once every scene is ready → export
 and after the forced failure, S18 after export, plus the three stub
 screens for the record).
 
+## Widening pass: per-template differentiation
+
+Second pass, same session: the other six templates no longer share
+faceless's exact pipeline with a different label on top. Each has its own
+step sequence and scene shape in `lib/data/template-config.ts`:
+
+- **avatar**: `analyzing_photo` → `writing_script` → `generating_lipsync`
+  → `syncing_captions` → `mastering`. One scene, not four — it's a single
+  continuous talking-head clip. The uploaded photo is wired through for
+  real (an actual `URL.createObjectURL` preview, passed to `createVideo`
+  as `sourcePhotoUrl`, shown as the scene's thumbnail) rather than just
+  accepted and ignored. Never forced to fail, since failing the only
+  scene reads as broken rather than a realistic demo.
+- **music_video**: `detecting_beat` → `generating_visuals` →
+  `syncing_to_beat` → `mastering`, 6 beat-matched scenes instead of 4.
+- **long_form**: same step shape as faceless but 9 chapter-structured
+  scenes at a longer per-scene duration (45s vs 5s).
+- **skeleton** / **character**: same step shape as faceless, with their
+  own (generic, original) scene beats instead of faceless's.
+- **clip**: minimal `generating_clip` → `mastering`, one scene.
+
+Verified with Playwright against the production build: uploaded a real
+PNG to the avatar form and confirmed it renders as the scene's thumbnail
+(`img[alt="Scene 1 preview"]` present), confirmed the music-video stepper
+shows "Detecting the track's beat" and produces exactly 6 scenes, and
+confirmed long-form produces exactly 9. Zero console errors.
+Screenshots: `S11-long-form.png`, `S12-avatar-ready.png`,
+`S13-music-video.png`.
+
 ## Parity
 
-`python3 replica-diff/parity.py replica/features.csv` → 33/100, 1 of 10
-must-haves fully done (scene regeneration). Correctly says "not shippable
-yet" — that's accurate for a shell + vertical slice pass, not a defect.
+`python3 replica-diff/parity.py replica/features.csv` → 36.2/100, 2 of 10
+must-haves fully done (scene regeneration; template selection now counts
+as done since every template has real, distinct behavior even though the
+AI calls themselves are still simulated). Correctly says "not shippable
+yet" — accurate for this pass, not a defect.
 
 ## Next
 

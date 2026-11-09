@@ -16,10 +16,17 @@ export function CreateForm({ template }: { template: Template }) {
   const [style, setStyle] = useState(styles[0]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
 
   const needsIdea = template.type !== "music_video";
   const needsPhoto = template.type === "avatar";
   const needsTrack = template.type === "music_video";
+
+  function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPhotoPreviewUrl(file ? URL.createObjectURL(file) : null);
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +45,7 @@ export function CreateForm({ template }: { template: Template }) {
       ideaPrompt: idea || `${template.title} from an uploaded ${needsTrack ? "track" : "photo"}`,
       voiceId,
       style,
+      sourcePhotoUrl: photoPreviewUrl ?? undefined,
     });
     // Kicks off the (simulated) pipeline in the background; the scene
     // editor polls the same store via useVideo/useScenes.
@@ -53,10 +61,15 @@ export function CreateForm({ template }: { template: Template }) {
             Your photo
           </label>
           <div className="flex items-center gap-3">
-            <div className="flex size-16 items-center justify-center rounded-md border border-dashed border-border-input bg-surface text-muted">
-              <ImagePlus className="size-5" aria-hidden />
+            <div className="flex size-16 items-center justify-center overflow-hidden rounded-md border border-dashed border-border-input bg-surface text-muted">
+              {photoPreviewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoPreviewUrl} alt="Your uploaded photo preview" className="size-full object-cover" />
+              ) : (
+                <ImagePlus className="size-5" aria-hidden />
+              )}
             </div>
-            <input id="photo" type="file" accept="image/*" className="text-sm text-muted" />
+            <input id="photo" type="file" accept="image/*" onChange={onPhotoChange} className="text-sm text-muted" />
           </div>
           <p className="mt-1 text-xs text-muted">Used only to generate your video. One clear, front-facing photo works best.</p>
         </div>

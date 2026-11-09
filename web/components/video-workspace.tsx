@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { SceneCard } from "@/components/ui/scene-card";
 import { Toast } from "@/components/ui/toast";
 import { useScenes, useVideo } from "@/lib/data/use-video";
-import { exportVideo, regenerateScene, STEP_LABEL, STEP_ORDER } from "@/lib/data/fake-client";
-import type { GenerationStep } from "@/lib/data/types";
+import { exportVideo, regenerateScene, stepsFor, STEP_LABEL } from "@/lib/data/fake-client";
+import type { GenerationStep, TemplateType } from "@/lib/data/types";
 
 export function VideoWorkspace({ videoId }: { videoId: string }) {
   const video = useVideo(videoId);
@@ -36,7 +36,7 @@ export function VideoWorkspace({ videoId }: { videoId: string }) {
       </div>
 
       {video.status === "generating" && (
-        <GenerationStepper currentStep={video.currentStep} />
+        <GenerationStepper currentStep={video.currentStep} templateType={video.templateType} />
       )}
 
       {video.status === "failed" && video.errorMessage && (
@@ -53,6 +53,7 @@ export function VideoWorkspace({ videoId }: { videoId: string }) {
                 index={i}
                 status={scene.status}
                 scriptText={scene.scriptText}
+                thumbnailUrl={scene.status === "ready" ? video.sourcePhotoUrl : undefined}
                 onRegenerate={() => regenerateScene(videoId, scene.id)}
               />
             ))}
@@ -78,12 +79,19 @@ export function VideoWorkspace({ videoId }: { videoId: string }) {
   );
 }
 
-function GenerationStepper({ currentStep }: { currentStep?: GenerationStep }) {
-  const currentIndex = currentStep ? STEP_ORDER.indexOf(currentStep) : 0;
+function GenerationStepper({
+  currentStep,
+  templateType,
+}: {
+  currentStep?: GenerationStep;
+  templateType: TemplateType;
+}) {
+  const steps = stepsFor(templateType);
+  const currentIndex = currentStep ? steps.indexOf(currentStep) : 0;
   return (
     <div role="status" aria-live="polite" className="rounded-lg border border-border bg-surface p-4">
       <ol className="space-y-2">
-        {STEP_ORDER.filter((s) => s !== "done").map((step, i) => {
+        {steps.map((step, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
           return (

@@ -1,6 +1,6 @@
 feature,area,priority,original,clone,notes
 Sign up with email or Google,onboarding,must,yes,no,no auth yet; single seeded demo user
-Pick a video template (faceless/avatar/music-video/long-form/skeleton/character/clip),creation,must,yes,partial,"all 7 routed and plan-gated; only faceless has distinct behavior, others share the generic pipeline"
+Pick a video template (faceless/avatar/music-video/long-form/skeleton/character/clip),creation,must,yes,yes,"all 7 routed, plan-gated, and each has its own step sequence and scene count (template-config.ts); only the underlying AI calls are still simulated"
 Generate a script from a topic or idea,creation,must,yes,partial,simulated script lines; no real LLM wired
 Generate per-scene AI visuals from the script,creation,must,yes,partial,simulated placeholder assets; no real image/video-gen wired
 Generate a voiceover in a chosen voice and language,creation,must,yes,no,pipeline has a step for it but no audio is produced
@@ -11,9 +11,9 @@ Download the finished video in 4K,export,must,yes,partial,export flow and button
 Credit-based usage metering per plan,billing,must,yes,partial,credit meter UI renders from seed data; spend/enforcement isn't wired
 Pick a visual style (cinematic/anime/realistic/3D/etc),creation,should,yes,yes,
 Multi-language voiceover and captions,creation,should,yes,no,voice picker shows a language per voice; no separate language selector or real TTS
-Avatar/UGC mode from an uploaded photo,creation,should,yes,partial,"form UI + file input built; upload isn't processed, runs the same generic pipeline"
-Music-video mode synced to a track's beat,creation,should,yes,partial,"form UI + file input built; no real beat-sync, runs the same generic pipeline"
-"Long-form mode (multi-scene, up to ~20 min)",creation,should,yes,partial,"routed and plan-gated; no distinct multi-scene/duration behavior yet"
+Avatar/UGC mode from an uploaded photo,creation,should,yes,partial,"photo is actually used (shown as the scene thumbnail), its own analyzing_photo/lip-sync steps; no real likeness/consent gate or real lip-sync"
+Music-video mode synced to a track's beat,creation,should,yes,partial,"own detecting_beat/syncing_to_beat steps and 6 beat-matched scenes; no real audio analysis"
+"Long-form mode (multi-scene, up to ~20 min)",creation,should,yes,partial,"9 distinct chapter-structured scenes at a longer per-scene duration; still the same simulated AI calls as faceless"
 One-click publish to a connected social channel,publishing,should,yes,no,
 Autopilot: scheduled unattended generation + publishing,automation,could,yes,no,"shell stub page only; highest-risk feature, built last per architecture.md"
 Idea/topic finder (trending-topic suggestions),creation,could,yes,no,

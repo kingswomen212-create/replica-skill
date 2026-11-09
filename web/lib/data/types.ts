@@ -35,6 +35,7 @@ export interface Video {
   languageCode: string;
   style: string;
   resolution: string;
+  sourcePhotoUrl?: string;
   finalVideoUrl?: string;
   errorMessage?: string;
   createdAt: string;
@@ -43,10 +44,15 @@ export interface Video {
 
 export type GenerationStep =
   | "writing_script"
+  | "analyzing_photo"
   | "generating_visuals"
   | "generating_voiceover"
+  | "generating_lipsync"
+  | "detecting_beat"
+  | "syncing_to_beat"
   | "syncing_captions"
   | "scoring_music"
+  | "generating_clip"
   | "mastering"
   | "done";
 
