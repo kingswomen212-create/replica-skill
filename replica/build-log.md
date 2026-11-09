@@ -174,6 +174,58 @@ must-haves fully done. Correctly still says "not shippable yet" — the
 remaining must-haves are all about the real AI pipeline and billing
 enforcement, which no amount of frontend widening substitutes for.
 
+## replica-test pass
+
+`replica/test-plan.md` (19 cases from F01-F05 plus navigation), 17
+automated as Playwright specs under `web/e2e/`, run against the
+production build (`next build && next start`) with a real axe
+accessibility scan and console-error/5xx watchers on every spec.
+1 case (out-of-credits) is correctly blocked rather than faked, since
+credit enforcement isn't wired yet; documented in the test plan, not
+skipped silently.
+
+Found and fixed 5 real bugs (full detail, repro steps and the regression
+test for each in `replica/bugs.md`), 3 of them only surfaced once the
+suite actually exercised edge cases that manual spot-checks hadn't hit:
+
+- **BUG-003** (S2): visiting a nonexistent video id crashed the whole
+  page with "Maximum update depth exceeded" instead of showing the
+  graceful empty state the code already had for it. `getScenes()`
+  returned a fresh `[]` literal on every call for a missing id;
+  `useSyncExternalStore` compares snapshots by reference, so a new array
+  every render looks like a perpetual change. Same bug class as the
+  mutation freeze found during replica-build, inverted.
+- **BUG-004** (S2): music-video could never export. Its step sequence
+  wrongly ran the per-scene generation loop twice (`generating_visuals`
+  *and* `syncing_to_beat`), which re-applied the forced first-pass
+  failure on every pass with no way to ever get past it.
+- **BUG-005** (S3): the selected voice/style chip's text failed WCAG AA
+  contrast (3.43:1 against a 4.5:1 floor), caught by an axe scan the
+  test suite runs on every creator screen. tokens.json's own
+  `contrast.py` check doesn't cover a translucent `accent/10` background
+  paired with accent-colored text, so this slipped through design.
+
+Also hit three test-authoring mistakes worth recording since they ate
+real debugging time chasing what looked like app bugs: an unscoped
+`getByRole("button", { name: "Generate" })` substring-matched
+"**Re**generate scene N" buttons too; `getByRole("alert")` collided with
+Next.js's own route-announcer element; and `Promise.all([click(), click()])`
+hung for a full test timeout when the first click navigated away,
+because `click()` retries its actionability check against a now-stale
+element handle. None of these are in `bugs.md` (they're test bugs, not
+product bugs) but they're logged in the bugs file's own section so the
+false trail doesn't get walked again.
+
+One infrastructure finding, also not a product bug: Playwright's
+`webServer` auto-start wrapper around `next start` produced severe,
+consistent slowdowns in this specific sandboxed environment (a pipeline
+that finished in ~3-4s against a manually-started server took 15-30s+ or
+timed out against the auto-started one, identical code). Switched to
+starting the server manually with output redirected to a file.
+
+Re-ran the full suite twice after all fixes: 17/17 pass both times, zero
+flakiness.
+
 ## Next
 
 Real backend work is blocked on credentials the user hasn't provided yet
@@ -185,5 +237,6 @@ just did. Once real credentials land: `/replica-backend` swaps
 `lib/data/fake-client.ts` for the real Supabase tables + Trigger.dev jobs
 from architecture.md (same function signatures, so no screen changes),
 wires a real LLM/TTS/image provider behind the BYO provider-key settings
-page, and adds Stripe + credit enforcement. Then `/replica-test` once the
-data layer is real.
+page, and adds Stripe + credit enforcement. Re-run the e2e suite once
+the data layer is real (the F01-N1 out-of-credits case in particular
+needs it), then `/replica-diff` for a parity score against aituber.app.

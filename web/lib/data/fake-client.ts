@@ -93,8 +93,17 @@ export function getVideo(id: string): Video | undefined {
   return store.videos.get(id);
 }
 
+// A stable reference, not a fresh [] on every call: useSyncExternalStore
+// (see use-video.ts) detects a change by comparing the snapshot it got
+// last time against this one, by reference. Returning a new array
+// literal for a missing id would look like a change on every single
+// render and infinite-loop (React throws "Maximum update depth
+// exceeded" once it notices) -- found by an e2e test visiting a bad
+// video id, see replica/bugs.md BUG-003.
+const EMPTY_SCENES: Scene[] = [];
+
 export function getScenes(videoId: string): Scene[] {
-  return store.scenes.get(videoId) ?? [];
+  return store.scenes.get(videoId) ?? EMPTY_SCENES;
 }
 
 /** Simulates the real generate-video job for this video's template: its
@@ -122,7 +131,14 @@ export async function generateVideo(videoId: string): Promise<void> {
   store.scenes.set(videoId, scenes);
   notify();
 
-  const visualishSteps = new Set(["generating_visuals", "generating_lipsync", "syncing_to_beat", "generating_clip"]);
+  // Exactly one per-scene step per template -- the step where scenes get
+  // their content. Every other step (detecting_beat, syncing_to_beat,
+  // syncing_captions, ...) is a flat delay, not a second scene pass.
+  // syncing_to_beat used to be listed here too, which made music_video
+  // run the whole scene loop twice and left it permanently stuck
+  // "failed" (the forced first-pass failure re-fired every pass with no
+  // way to regenerate past it). See replica/bugs.md BUG-002.
+  const visualishSteps = new Set(["generating_visuals", "generating_lipsync", "generating_clip"]);
 
   for (const step of restSteps.slice(0, -1)) {
     setVideo(videoId, { currentStep: step });

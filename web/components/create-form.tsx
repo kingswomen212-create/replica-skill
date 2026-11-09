@@ -116,10 +116,10 @@ export function CreateForm({ template }: { template: Template }) {
               aria-checked={voiceId === v.id}
               onClick={() => setVoiceId(v.id)}
               className={`rounded-pill border px-3 py-1.5 text-sm transition-colors ${
-                voiceId === v.id ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface text-muted hover:text-text"
+                voiceId === v.id ? "border-accent bg-accent/10 text-text" : "border-border bg-surface text-muted hover:text-text"
               }`}
             >
-              {v.name} <span className="text-xs opacity-70">· {v.trait}</span>
+              {v.name} <span className="text-xs text-muted">· {v.trait}</span>
             </button>
           ))}
         </div>
@@ -136,7 +136,7 @@ export function CreateForm({ template }: { template: Template }) {
               aria-checked={style === s}
               onClick={() => setStyle(s)}
               className={`rounded-pill border px-3 py-1.5 text-sm transition-colors ${
-                style === s ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface text-muted hover:text-text"
+                style === s ? "border-accent bg-accent/10 text-text" : "border-border bg-surface text-muted hover:text-text"
               }`}
             >
               {s}

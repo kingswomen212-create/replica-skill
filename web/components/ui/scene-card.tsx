@@ -54,7 +54,7 @@ export function SceneCard({
       <Button
         variant="ghost"
         size="sm"
-        aria-label={`Regenerate scene ${index + 1}`}
+        aria-label={`${status === "failed" ? "Retry" : "Regenerate"} scene ${index + 1}`}
         onClick={onRegenerate}
         loading={status === "generating"}
         disabled={status === "generating"}
