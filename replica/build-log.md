@@ -21,10 +21,10 @@ from recon.md, architecture.md and design/ only.
 | S16 AI clip creator | 2026-11-09 | partial | real AI calls, distinct input modes | own minimal generating_clip/mastering pipeline, single scene, never forced to fail |
 | S17 scene editor / live progress | 2026-11-09 | done | real AI calls, real asset thumbnails | regenerate works; one scene fails by design on first pass to exercise the error state honestly, not just style it |
 | S18 export | 2026-11-09 | partial | no file is actually produced | button, loading state and success toast all work against the fake layer |
-| S19 Autopilot setup | 2026-11-09 | stub | everything | shell page only, says so on-screen; highest-risk feature per architecture.md, built last on purpose |
-| S20 Autopilot dashboard | 2026-11-09 | not started | everything | folded into S19's stub for now |
+| S19 Autopilot setup | 2026-11-09 | partial | real OAuth, real scheduler | connect/disconnect, autopilot toggle, niche + cadence are interactive against local state (channels-client.ts) |
+| S20 Autopilot dashboard | 2026-11-09 | partial | real run history | folded into S19; a run history seeds in as soon as autopilot is turned on for a channel |
 | S21 billing | 2026-11-09 | partial | Stripe checkout, credit enforcement | plan cards + credit meter render from seed data; buttons are presentational |
-| S22 settings (BYO provider keys) | 2026-11-09 | stub | key storage, encryption | shell page explains the feature and shows the three key types; nothing is saved |
+| S22 settings (BYO provider keys) | 2026-11-09 | partial | real storage, encryption, real provider calls | add/replace/remove a key is interactive against local state (provider-keys-client.ts), masked to last 4 chars, explicit on-screen warning that it's not persisted or sent anywhere |
 | S01 home | 2026-11-09 | done | | hero, template grid, differentiator callouts, CTA |
 | S02 features | 2026-11-09 | done | | 6 feature cards, pulls real counts from seed.ts |
 | S03 how it works | 2026-11-09 | done | | 3-step explainer |
@@ -132,9 +132,44 @@ console errors. Screenshots: `S01-home-new.png` (+ mobile),
 `S02-features.png`, `S03-howitworks.png`, `S04-pricing.png`,
 `S05-faq.png` (+ expanded), `S07-signup.png`, `S08-signin.png`.
 
+## Widening pass: Autopilot and settings made interactive
+
+Fourth pass, same session: both remaining stub screens now hold real
+client-side state instead of static placeholders.
+
+- **Autopilot** (`lib/data/channels-client.ts`, same immutable-update
+  discipline as `fake-client.ts`): Connect simulates the OAuth redirect
+  round trip (a `connecting` state, then `connected` with a fake account
+  handle), the autopilot checkbox reveals niche + posting-cadence
+  controls, and turning it on seeds a small run history so the screen
+  isn't empty the moment it's useful. Disconnect tears all of that back
+  down. None of it touches a real platform; the page says so on-screen.
+- **Settings / BYO provider keys** (`lib/data/provider-keys-client.ts`):
+  add, replace and remove a key per provider type, masked to its last 4
+  characters on display. Deliberately **not** a realistic security demo:
+  the page carries an explicit warning that nothing here is persisted or
+  sent anywhere, because a convincing-looking key-entry form that doesn't
+  actually protect what's typed into it would be worse than an honest
+  stub — it could tempt someone into pasting a real secret.
+
+Two more lucide-react gaps found the same way as the earlier `Chrome`
+icon: `Youtube`, `Instagram` and `Facebook` aren't exported by the
+installed version either. Replaced with generic icons (`PlaySquare`,
+`Camera`, `Users`, `Hash`) rather than hunting for brand-shaped
+substitutes — platform logos are exactly the kind of foreign trademark
+replica-design's rules already say not to reproduce, so the gap pointed
+at the right call anyway.
+
+Verified with Playwright against the production build: connected a
+channel, toggled autopilot, set a niche, confirmed the seeded run history
+appears, disconnected, then added a provider key and confirmed only the
+last 4 characters ever render, then removed it. Zero console errors.
+Screenshots: `S19-autopilot-empty.png`, `S19-autopilot-connected.png`,
+`S22-settings-key-added.png`.
+
 ## Parity
 
-`python3 replica-diff/parity.py replica/features.csv` → 39.4/100, 2 of 10
+`python3 replica-diff/parity.py replica/features.csv` → 40.4/100, 2 of 10
 must-haves fully done. Correctly still says "not shippable yet" — the
 remaining must-haves are all about the real AI pipeline and billing
 enforcement, which no amount of frontend widening substitutes for.
@@ -143,12 +178,12 @@ enforcement, which no amount of frontend widening substitutes for.
 
 Real backend work is blocked on credentials the user hasn't provided yet
 (an OpenAI key was attempted and rejected by OpenAI as invalid; see chat
-history). Until that's unblocked, remaining frontend work is S06's niche
-landing pages (low value, explicitly out of scope per recon), S19/S20
-Autopilot's UI made interactive against local state, or S21/S22 made to
-actually persist choices client-side. Once real credentials land:
-`/replica-backend` swaps `lib/data/fake-client.ts` for the real Supabase
-tables + Trigger.dev jobs from architecture.md (same function signatures,
-so no screen changes), wires a real LLM/TTS/image provider behind the BYO
-provider-key settings page, and adds Stripe + credit enforcement. Then
-`/replica-test` once the data layer is real.
+history). Frontend-only work left is thin: S06's niche landing pages
+(low value, explicitly out of scope per recon) and S21 billing's plan
+switcher could get the same local-state treatment Autopilot and settings
+just did. Once real credentials land: `/replica-backend` swaps
+`lib/data/fake-client.ts` for the real Supabase tables + Trigger.dev jobs
+from architecture.md (same function signatures, so no screen changes),
+wires a real LLM/TTS/image provider behind the BYO provider-key settings
+page, and adds Stripe + credit enforcement. Then `/replica-test` once the
+data layer is real.

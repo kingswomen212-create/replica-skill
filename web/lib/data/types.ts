@@ -77,3 +77,36 @@ export interface Template {
   description: string;
   minPlan: string; // plan name a user needs to unlock this template
 }
+
+export type Platform = "youtube" | "tiktok" | "instagram" | "facebook" | "threads" | "x";
+export type ChannelStatus = "disconnected" | "connecting" | "connected" | "expired" | "error";
+
+export interface Channel {
+  id: string;
+  platform: Platform;
+  status: ChannelStatus;
+  accountHandle?: string;
+  autopilotEnabled: boolean;
+  niche?: string;
+  postingFrequency?: string;
+}
+
+export type AutopilotRunStatus = "idea_picked" | "generating" | "published" | "failed";
+
+export interface AutopilotRun {
+  id: string;
+  channelId: string;
+  status: AutopilotRunStatus;
+  videoTitle: string;
+  runAt: string;
+}
+
+export type ProviderType = "llm" | "tts" | "image";
+
+export interface ProviderKey {
+  id: string;
+  providerType: ProviderType;
+  providerName: string;
+  /** Never the real value -- last 4 characters only, for display. */
+  maskedKey: string;
+}

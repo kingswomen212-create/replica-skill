@@ -15,7 +15,7 @@ Avatar/UGC mode from an uploaded photo,creation,should,yes,partial,"photo is act
 Music-video mode synced to a track's beat,creation,should,yes,partial,"own detecting_beat/syncing_to_beat steps and 6 beat-matched scenes; no real audio analysis"
 "Long-form mode (multi-scene, up to ~20 min)",creation,should,yes,partial,"9 distinct chapter-structured scenes at a longer per-scene duration; still the same simulated AI calls as faceless"
 One-click publish to a connected social channel,publishing,should,yes,no,
-Autopilot: scheduled unattended generation + publishing,automation,could,yes,no,"shell stub page only; highest-risk feature, built last per architecture.md"
+Autopilot: scheduled unattended generation + publishing,automation,could,yes,partial,"connect/disconnect, autopilot toggle, niche + cadence, and a run history are interactive against local state; no real OAuth, no real scheduler, nothing actually fires on a timer"
 Idea/topic finder (trending-topic suggestions),creation,could,yes,no,
 Niche-specific landing pages/generators (SEO funnel),growth,could,yes,no,marketing site out of scope this pass
 Team seats / invite collaborators,team,could,yes,no,
