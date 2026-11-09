@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .venv/
 *.tmp
+
+# replica-recon reference screenshots: local reference only, never shipped
+replica/screens/
