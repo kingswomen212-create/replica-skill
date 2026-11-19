@@ -8,6 +8,7 @@ export function TemplateCard({
   description,
   locked,
   selected,
+  badge,
   onClick,
 }: {
   icon: LucideIcon;
@@ -15,6 +16,7 @@ export function TemplateCard({
   description: string;
   locked?: boolean;
   selected?: boolean;
+  badge?: string;
   onClick?: () => void;
 }) {
   return (
@@ -36,6 +38,11 @@ export function TemplateCard({
         {locked && (
           <span className="absolute right-4 top-4 flex items-center gap-1 text-xs text-muted">
             <Lock className="size-3.5" aria-hidden /> Upgrade to unlock
+          </span>
+        )}
+        {!locked && badge && (
+          <span className="absolute right-4 top-4 rounded-pill border border-success/30 bg-success/15 px-2 py-0.5 text-xs text-success">
+            {badge}
           </span>
         )}
       </button>

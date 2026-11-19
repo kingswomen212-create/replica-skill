@@ -226,17 +226,66 @@ starting the server manually with output redirected to a file.
 Re-ran the full suite twice after all fixes: 17/17 pass both times, zero
 flakiness.
 
+## Real generation, $0 budget: the faceless template actually works now
+
+The user has no budget for a paid AI provider (an OpenAI key was tried;
+the account had no billing credit). Rather than stay simulated
+indefinitely, built a genuinely free pipeline for the faceless template
+specifically (`web/lib/ai/free-pipeline.ts`): script from pollinations.ai's
+free text API, per-scene images from its free image API, voiceover from
+the offline `espeak-ng` engine, composited into a real MP4 with ffmpeg
+(Ken Burns zoom + burned-in captions). `POST /api/generate-faceless`
+returns the actual video file; `components/real-faceless-generator.tsx`
+replaces `CreateForm` for this one template only -- the other 6 stay on
+the simulated pipeline, clearly labeled "Real — free tier" vs. not on
+the dashboard.
+
+Three real bugs found and fixed while getting this working, in order:
+
+1. **Server-side fetch calls failed unpredictably inside Next's route
+   handler** (`ENOTFOUND`, then inconsistent errors) despite identical
+   code working every time as a standalone Node script. Traced to Next.js
+   patching/bundling `fetch` (and even an explicit `undici` import) in a
+   way that doesn't cooperate with this sandbox's HTTPS proxy. Fixed by
+   shelling out to `curl` for these calls instead -- the same tool every
+   other network call in this project already uses successfully.
+2. **`seed=Date.now()`** overflows the free API's signed-int32 limit
+   (2147483647) and gets rejected -- surfaced as a confusing 400/402
+   depending on endpoint. Fixed with a bounded random seed.
+3. **Captions ran off both edges of the frame.** `drawtext` never wraps
+   text on its own; this wasn't caught until actually looking at a
+   rendered frame, not just checking exit codes. Fixed with a real
+   word-wrap function and `textfile=` (reads from a file, sidesteps
+   filter-string escaping entirely) instead of an inline `text=` value.
+
+Honest limitations of the $0 path, stated on the page itself, not buried:
+the free image API's watermark can't be removed (confirmed: `nologo=true`
+has no effect on the anonymous tier) and it rate-limits to 1 image per
+45 seconds per IP, so a 4-scene video takes 2-4 minutes; the voice is
+`espeak-ng`, robotic, and the voice/language pickers don't affect it yet;
+output is 1080x1920, not 4K. All real tradeoffs of free, not bugs.
+
+Verified twice end to end against the production build: once hitting the
+API directly with curl (3.2MB real MP4, 1080x1920, real audio track), and
+once through the actual browser UI with Playwright (idea → generating
+state → a real video element with working playback and a working
+download link), zero console errors either time.
+
+`features.csv` updated: 4 must-haves now fully real for faceless (script,
+visuals; voiceover and captions moved from no/partial to real-but-robotic
+partial). Parity 40.4 → 53.2/100, 2 → 4 of 10 must-haves done.
+
 ## Next
 
-Real backend work is blocked on credentials the user hasn't provided yet
-(an OpenAI key was attempted and rejected by OpenAI as invalid; see chat
-history). Frontend-only work left is thin: S06's niche landing pages
-(low value, explicitly out of scope per recon) and S21 billing's plan
-switcher could get the same local-state treatment Autopilot and settings
-just did. Once real credentials land: `/replica-backend` swaps
-`lib/data/fake-client.ts` for the real Supabase tables + Trigger.dev jobs
-from architecture.md (same function signatures, so no screen changes),
-wires a real LLM/TTS/image provider behind the BYO provider-key settings
-page, and adds Stripe + credit enforcement. Re-run the e2e suite once
-the data layer is real (the F01-N1 out-of-credits case in particular
-needs it), then `/replica-diff` for a parity score against aituber.app.
+The remaining must-haves (background music, real credit enforcement, a
+non-robotic voice, more than one template) all cost real money to solve
+properly -- there's no further $0 move here without quality tradeoffs
+stacking up (e.g. a worse free TTS than espeak doesn't really exist).
+When there's budget: wire a paid provider behind the same
+generateScript/generateImage/generateVoice call sites in
+`free-pipeline.ts` (drop-in replacement, no screen changes), do the same
+for the other 6 templates, and tie `spend_credits()` (already written and
+tested in `schema.sql`) to the real generation call. Real auth/billing
+(`/replica-backend`'s Supabase + Stripe work) still needs real
+credentials the user hasn't provided. Re-run the e2e suite once the data
+layer is real, then `/replica-diff` again for an updated parity score.

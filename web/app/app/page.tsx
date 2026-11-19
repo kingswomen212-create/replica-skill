@@ -43,6 +43,7 @@ export default function DashboardPage() {
               title={t.title}
               description={t.description}
               locked={locked}
+              badge={t.type === "faceless" ? "Real — free tier" : undefined}
             />
           );
           return locked ? (

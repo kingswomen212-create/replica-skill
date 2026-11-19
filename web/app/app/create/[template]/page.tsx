@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { CreateForm } from "@/components/create-form";
+import { RealFacelessGenerator } from "@/components/real-faceless-generator";
 import { templates, currentUser, planFor, planRank } from "@/lib/data/seed";
 
 export function generateStaticParams() {
@@ -27,7 +28,7 @@ export default function CreatePage({ params }: { params: { template: string } })
       <h1 className="text-lg font-semibold text-text">{template.title}</h1>
       <p className="mt-1 text-sm text-muted">{template.description}</p>
       <div className="mt-6">
-        <CreateForm template={template} />
+        {template.type === "faceless" ? <RealFacelessGenerator /> : <CreateForm template={template} />}
       </div>
     </div>
   );
