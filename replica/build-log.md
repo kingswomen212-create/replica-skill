@@ -275,6 +275,38 @@ download link), zero console errors either time.
 visuals; voiceover and captions moved from no/partial to real-but-robotic
 partial). Parity 40.4 → 53.2/100, 2 → 4 of 10 must-haves done.
 
+## Deployment + a real (if minimal) paygate
+
+Two things needed before this can actually earn money, both added this
+pass:
+
+- **`Dockerfile`** (multi-stage, `node:22-slim`, ffmpeg + espeak-ng +
+  curl in the runtime stage, Next.js `output: "standalone"`). Needed
+  because the generation pipeline shells out to system binaries and
+  takes 2-4 minutes -- incompatible with Vercel's default serverless
+  hosting. Verified what this sandbox's networking allows: the
+  standalone build itself produces the right output and runs correctly
+  end to end (every route 200s, the generate API starts processing).
+  Couldn't build/run the actual Docker image here -- this sandbox's
+  container network can't resolve any host at all inside `docker build`,
+  a constraint of this sandbox, not of Railway/Render's build servers.
+  `DEPLOY.md` has the step-by-step Railway instructions (account
+  creation, env vars, custom domain) for the parts only the user can do.
+- **A Stripe paygate** (`lib/stripe.ts`, `app/api/checkout/`,
+  `generate-faceless`'s route updated to require it): one-time
+  Stripe Checkout payment per video, no accounts or database needed.
+  Off by default -- generation stays free until `STRIPE_SECRET_KEY` is
+  set on the host, so the app never breaks for lack of a key, and the
+  whole flow (idle → pay gate appears once configured → Checkout
+  redirect → back with a session id → payment verified server-side
+  against Stripe itself, not trusted from the client → session marked
+  redeemed so it can't be reused → generation proceeds) was exercised
+  with a fake key to confirm the gate renders, blocks generation until
+  paid, and fails the way a real invalid-payment attempt should (a
+  visible error, not a crash). Couldn't test an actual successful
+  charge -- that needs a real Stripe account, which only the user can
+  create.
+
 ## Next
 
 The remaining must-haves (background music, real credit enforcement, a

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runFreePipeline } from "@/lib/ai/free-pipeline";
+import { isPaymentConfigured, markSessionRedeemed, stripeClient, wasSessionRedeemed } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 // 4 scenes, images paced 1-per-45s (the free image API's rate limit) +
@@ -7,7 +8,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
-  let body: { idea?: string; style?: string };
+  let body: { idea?: string; style?: string; sessionId?: string };
   try {
     body = await req.json();
   } catch {
@@ -18,6 +19,29 @@ export async function POST(req: NextRequest) {
   const style = (body.style ?? "cinematic").trim();
   if (idea.length < 4) {
     return NextResponse.json({ error: "idea is too short" }, { status: 400 });
+  }
+
+  // Paygate: a no-op (free) until STRIPE_SECRET_KEY is set on the host.
+  // Once it is, every generation needs a paid, unredeemed Checkout
+  // Session id, verified against Stripe itself (not just trusted from
+  // the client) and marked redeemed so the same session can't be reused.
+  if (isPaymentConfigured()) {
+    const sessionId = body.sessionId;
+    if (!sessionId) {
+      return NextResponse.json({ error: "payment required" }, { status: 402 });
+    }
+    if (wasSessionRedeemed(sessionId)) {
+      return NextResponse.json({ error: "this payment was already used for a video" }, { status: 402 });
+    }
+    try {
+      const session = await stripeClient().checkout.sessions.retrieve(sessionId);
+      if (session.payment_status !== "paid") {
+        return NextResponse.json({ error: "payment not completed" }, { status: 402 });
+      }
+    } catch {
+      return NextResponse.json({ error: "couldn't verify payment" }, { status: 402 });
+    }
+    markSessionRedeemed(sessionId);
   }
 
   try {
