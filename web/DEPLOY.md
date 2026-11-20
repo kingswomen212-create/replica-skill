@@ -15,10 +15,17 @@ If it isn't already, Railway deploys from a GitHub repo.
 
 1. Go to [railway.app](https://railway.app) and sign up (free, a GitHub
    login is the fastest way in).
-2. **New Project → Deploy from GitHub repo**, pick this repo.
-3. Railway will detect the `Dockerfile` in `web/` automatically. If it
-   asks for a root directory, set it to `web`.
-4. It builds and deploys automatically on push after this. The free
+2. **New Project → Deploy from GitHub repo**, pick this repo
+   (`kingswomen212-create/replica-skill`).
+3. **The only thing to check**: when Railway asks which branch, pick
+   **`claude/jolly-brown-c2t3p5`** (not `main` — that's where this app's
+   code lives). If a service already exists from a previous attempt, its
+   **Settings → Source → Branch** is where to change it.
+4. That's it — no "Root Directory" setting to find or change.
+   `railway.json` (at the repo root and inside `web/`, so it's found
+   either way) tells Railway exactly which Dockerfile to build, so it
+   configures itself.
+5. It builds and deploys automatically on push after this. The free
    trial credit covers the first chunk of usage; after that it's
    usage-based, roughly $5/month for a small always-on service.
 
