@@ -1,0 +1,64 @@
+{
+  "mode": "layout",
+  "original": {
+    "width": 1440,
+    "height": 3317
+  },
+  "clone": {
+    "width": 1440,
+    "height": 1132
+  },
+  "compared_at": {
+    "width": 480,
+    "height": 377
+  },
+  "height_delta_pct": -65.9,
+  "score": 21.1,
+  "verdict": "different",
+  "regions": [
+    {
+      "x": 120,
+      "y": 0,
+      "w": 1200,
+      "h": 1200,
+      "cells": 46,
+      "where": "middle centre"
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 480,
+      "h": 120,
+      "cells": 4,
+      "where": "top left"
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 240,
+      "h": 120,
+      "cells": 2,
+      "where": "top right"
+    },
+    {
+      "x": 240,
+      "y": 480,
+      "w": 120,
+      "h": 240,
+      "cells": 2,
+      "where": "middle left"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 120,
+      "h": 120,
+      "cells": 1,
+      "where": "top centre"
+    }
+  ],
+  "files": {
+    "original": "replica/screens/S03-howitworks.png",
+    "clone": "replica/clone-screens/S03-howitworks.png"
+  }
+}

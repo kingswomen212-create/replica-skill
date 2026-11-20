@@ -1,0 +1,64 @@
+{
+  "mode": "layout",
+  "original": {
+    "width": 1440,
+    "height": 2056
+  },
+  "clone": {
+    "width": 1440,
+    "height": 1010
+  },
+  "compared_at": {
+    "width": 480,
+    "height": 337
+  },
+  "height_delta_pct": -50.8,
+  "score": 24.2,
+  "verdict": "different",
+  "regions": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 960,
+      "cells": 47,
+      "where": "middle centre"
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 480,
+      "h": 120,
+      "cells": 4,
+      "where": "top left"
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 240,
+      "h": 120,
+      "cells": 2,
+      "where": "top right"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 120,
+      "h": 120,
+      "cells": 1,
+      "where": "top centre"
+    },
+    {
+      "x": 1200,
+      "y": 360,
+      "w": 120,
+      "h": 120,
+      "cells": 1,
+      "where": "middle right"
+    }
+  ],
+  "files": {
+    "original": "replica/screens/S05-faq.png",
+    "clone": "replica/clone-screens/S05-faq.png"
+  }
+}

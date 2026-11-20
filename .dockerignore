@@ -1,0 +1,9 @@
+# Only web/ is needed for the deployable image -- the rest of this repo
+# is the Replica skill pack itself, not part of the app.
+*
+!web/**
+web/node_modules
+web/.next
+web/test-results
+web/playwright-report
+web/e2e
